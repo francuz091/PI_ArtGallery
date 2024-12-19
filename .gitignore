@@ -1,0 +1,6 @@
+# Ignoriši bin i obj direktorijume (build output)
+bin/
+obj/
+
+# Ignoriši Visual Studio fajlove
+.vs/
