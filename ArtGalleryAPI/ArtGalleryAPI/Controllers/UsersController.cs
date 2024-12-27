@@ -1,0 +1,86 @@
+﻿using ArtGalleryAPI.Models;
+using ArtGalleryAPI.Models.DTO;
+using ArtGalleryAPI.Security;
+using ArtGalleryAPI.Service;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
+
+namespace ArtGallery.API.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+        public class UsersController : ControllerBase
+        {
+
+        private readonly UserService _userService;
+        private readonly ArtGalleryContext _context;
+
+            public UsersController(ArtGalleryContext context, UserService userService)
+            {
+                _context = context;
+                _userService = userService;
+            }
+            [HttpGet("/Users")]
+            public async Task<ActionResult<IEnumerable<UserDTO>>> GetUsers()
+            {
+                if (_context.Users == null)
+                {
+                    return NotFound();
+                }
+                var users = await _userService.GetUsersAsync();
+
+                return Ok(users);
+
+            }
+        
+
+
+        [HttpPost("/Login")]
+        public async Task<ActionResult> Auth([FromBody] AuthRequestDTO authRequest)
+        {
+            if (string.IsNullOrWhiteSpace(authRequest.Password)) 
+                return BadRequest(new { Message = "Password is required." });
+            if (string.IsNullOrWhiteSpace(authRequest.Username)) 
+                return BadRequest(new { Message = "Username is required." });
+
+            var userDTO = await _userService.GetUserByUsernameAsync(authRequest.Username);
+
+            if (userDTO != null)
+            {
+                if (SecurityHelper.VerifyPassword(authRequest.Password, userDTO.Password))
+                {
+                    string json = JsonConvert.SerializeObject(userDTO);
+
+                    return Ok(json);
+                }
+                else
+                { return Unauthorized("Neispravna lozinka."); }
+                
+            }
+            else
+            { return Unauthorized("Korisnik nije pronađen."); }
+        }
+
+        [HttpPost("/Register")]
+        public async Task<ActionResult> Register([FromBody] User model)
+        {
+
+            var user = new User { FirstName = model.FirstName, LastName = model.LastName, Username = model.Username, Email = model.Email, Password = SecurityHelper.HashPassword(model.Email) };
+            
+            var result = await _context.AddAsync(user);
+
+            if (result != null)
+            {                
+                return Ok("Korisnik uspješno kreiran");
+            }
+            else
+            {
+                return NotFound("Korisnik nije kreiran.");
+            }
+        }
+
+        
+
+    }
+}
