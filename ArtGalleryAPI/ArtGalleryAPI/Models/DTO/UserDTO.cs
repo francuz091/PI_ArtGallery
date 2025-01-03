@@ -15,7 +15,7 @@
         public string Password { get; set; }
 
         public byte[]? Picture { get; set; }
-        public int RoleTypeId { get; set; }
+        public int? RoleTypeId { get; set; }
 
         public string RoleType { get; set; }
     }

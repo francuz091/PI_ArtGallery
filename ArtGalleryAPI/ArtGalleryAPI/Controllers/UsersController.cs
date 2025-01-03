@@ -21,6 +21,8 @@ namespace ArtGallery.API.Controllers
                 _context = context;
                 _userService = userService;
             }
+
+
             [HttpGet("/Users")]
             public async Task<ActionResult<IEnumerable<UserDTO>>> GetUsers()
             {
@@ -63,24 +65,18 @@ namespace ArtGallery.API.Controllers
         }
 
         [HttpPost("/Register")]
-        public async Task<ActionResult> Register([FromBody] User model)
+        public async Task<ActionResult> Register([FromBody] RegisterDTO model)
         {
+            var result = await _userService.PostUserAsync(model);
 
-            var user = new User { FirstName = model.FirstName, LastName = model.LastName, Username = model.Username, Email = model.Email, Password = SecurityHelper.HashPassword(model.Email) };
-            
-            var result = await _context.AddAsync(user);
-
-            if (result != null)
-            {                
-                return Ok("Korisnik uspješno kreiran");
-            }
-            else
+            if (result.Success)
             {
-                return NotFound("Korisnik nije kreiran.");
+                
+                return Ok(new { Message = "Korisnik uspješno kreiran", User = result.Data });
             }
-        }
-
-        
+            
+            return BadRequest(new { Message = result.ErrorMessage });
+        }  
 
     }
 }
