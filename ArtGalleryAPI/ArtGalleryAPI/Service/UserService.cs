@@ -1,7 +1,9 @@
 ﻿using ArtGalleryAPI.Models;
 using ArtGalleryAPI.Models.DTO;
 using ArtGalleryAPI.Response;
+using ArtGalleryAPI.Security;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using System.Data;
 
 namespace ArtGalleryAPI.Service
@@ -36,29 +38,42 @@ namespace ArtGalleryAPI.Service
             return usersDTO;
         }
 
-        public async Task<UserDTO?> GetUserByUsernameAsync(string username)
+        public async Task<BaseResponse<UserDTO>> LoginUserAsync(AuthRequestDTO authRequest)
         {
+            if (string.IsNullOrWhiteSpace(authRequest.Password))
+                return BaseResponse<UserDTO>.FailureResult("Password is required.");
+            if (string.IsNullOrWhiteSpace(authRequest.Username))
+                return BaseResponse<UserDTO>.FailureResult("Username is required.");
+
             var user = await _context.Users
                 .Include(u => u.RoleType)
-                .SingleOrDefaultAsync(u => u.Username == username);
+                .SingleOrDefaultAsync(u => u.Username == authRequest.Username);
 
-            if (user == null) return null;           
+            if (user == null) 
+                return BaseResponse<UserDTO>.FailureResult("Username not found");
 
-            return new UserDTO
+            if (SecurityHelper.VerifyPassword(authRequest.Password, user.Password))
             {
-                Iduser = user.Iduser,
-                Username = user.Username,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Email = user.Email,
-                Password = user.Password,
-                Picture = user.Picture,
-                RoleTypeId = user.RoleType.IdroleType,
-                RoleType = user.RoleType.Type
-            };
+                return BaseResponse<UserDTO>.SuccessResult(new UserDTO
+                {
+                    Iduser = user.Iduser,
+                    Username = user.Username,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    Email = user.Email,
+                    Password = user.Password,
+                    Picture = user.Picture,
+                    RoleTypeId = user.RoleType.IdroleType,
+                    RoleType = user.RoleType.Type
+                }); 
+            }
+            else
+                return BaseResponse<UserDTO>.FailureResult("Neispravna lozinka");
+
+
         }
 
-        public async Task<BaseResponse<UserDTO>> PostUserAsync(RegisterDTO userDTO)
+        public async Task<BaseResponse<UserDTO>> RegisterUserAsync(RegisterDTO userDTO)
         {       
 
             var existingUser = await _context.Users
@@ -76,7 +91,7 @@ namespace ArtGalleryAPI.Service
                 FirstName = userDTO.FirstName,
                 LastName = userDTO.LastName,
                 Email = userDTO.Email,
-                Password = userDTO.Password,
+                Password = SecurityHelper.HashPassword(userDTO.Password),
                 Picture = null,
                 RoleTypeId = roleType.IdroleType,               
             };

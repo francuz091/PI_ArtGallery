@@ -41,37 +41,47 @@ namespace ArtGallery.API.Controllers
         [HttpPost("/Login")]
         public async Task<ActionResult> Auth([FromBody] AuthRequestDTO authRequest)
         {
-            if (string.IsNullOrWhiteSpace(authRequest.Password)) 
-                return BadRequest(new { Message = "Password is required." });
-            if (string.IsNullOrWhiteSpace(authRequest.Username)) 
-                return BadRequest(new { Message = "Username is required." });
+            //if (string.IsNullOrWhiteSpace(authRequest.Password)) 
+            //    return BadRequest(new { Message = "Password is required." });
+            //if (string.IsNullOrWhiteSpace(authRequest.Username)) 
+            //    return BadRequest(new { Message = "Username is required." });
 
-            var userDTO = await _userService.GetUserByUsernameAsync(authRequest.Username);
+            //var userDTO = await _userService.LoginUserAsync(authRequest);
 
-            if (userDTO != null)
-            {
-                if (SecurityHelper.VerifyPassword(authRequest.Password, userDTO.Password))
-                {
-                    string json = JsonConvert.SerializeObject(userDTO);
+            //if (userDTO != null)
+            //{
+            //    if (SecurityHelper.VerifyPassword(authRequest.Password, userDTO.Password))
+            //    {
+            //        string json = JsonConvert.SerializeObject(userDTO);
 
-                    return Ok(json);
-                }
-                else
-                { return Unauthorized("Neispravna lozinka."); }
+            //        return Ok(json);
+            //    }
+            //    else
+            //    { return Unauthorized("Neispravna lozinka."); }
                 
+            //}
+            //else
+            //{ return Unauthorized("Korisnik nije pronađen."); }
+
+
+            var result = await _userService.LoginUserAsync(authRequest);
+
+            if (result.Success)
+            {
+                return Ok(new { Message = "Korisnik uspješno logiran", User = result.Data });
             }
-            else
-            { return Unauthorized("Korisnik nije pronađen."); }
-        }
+
+            return BadRequest(new { Message = result.ErrorMessage });
+        }  
+        
 
         [HttpPost("/Register")]
         public async Task<ActionResult> Register([FromBody] RegisterDTO model)
         {
-            var result = await _userService.PostUserAsync(model);
+            var result = await _userService.RegisterUserAsync(model);
 
             if (result.Success)
-            {
-                
+            {                
                 return Ok(new { Message = "Korisnik uspješno kreiran", User = result.Data });
             }
             
