@@ -41,28 +41,6 @@ namespace ArtGallery.API.Controllers
         [HttpPost("/Login")]
         public async Task<ActionResult> Auth([FromBody] AuthRequestDTO authRequest)
         {
-            //if (string.IsNullOrWhiteSpace(authRequest.Password)) 
-            //    return BadRequest(new { Message = "Password is required." });
-            //if (string.IsNullOrWhiteSpace(authRequest.Username)) 
-            //    return BadRequest(new { Message = "Username is required." });
-
-            //var userDTO = await _userService.LoginUserAsync(authRequest);
-
-            //if (userDTO != null)
-            //{
-            //    if (SecurityHelper.VerifyPassword(authRequest.Password, userDTO.Password))
-            //    {
-            //        string json = JsonConvert.SerializeObject(userDTO);
-
-            //        return Ok(json);
-            //    }
-            //    else
-            //    { return Unauthorized("Neispravna lozinka."); }
-                
-            //}
-            //else
-            //{ return Unauthorized("Korisnik nije pronađen."); }
-
 
             var result = await _userService.LoginUserAsync(authRequest);
 

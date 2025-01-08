@@ -1,6 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using ArtGalleryAPI.Models.DTO;
+using ArtGalleryAPI.Response;
+using ArtGalleryWebApp.Response;
+using Newtonsoft.Json;
+using System;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
@@ -15,42 +17,37 @@ namespace ArtGalleryWebApp.Dao
         public Repository()
         {
             httpClient = new HttpClient();
-            httpClient.BaseAddress = new Uri("http://localhost:5051");
+            httpClient.BaseAddress = new Uri("http://localhost:5173");
         }
-        public async Task<string> Login(string username, string password)
+        public async Task<BaseResponse<UserDTO>> Login(AuthRequestDTO authRequest)
         {
             try
             {
-                var authRequest = new
-                {
-                    Username = username,
-                    Password = password
-                };
 
-                var response = await httpClient.PostAsJsonAsync("Login", authRequest);
+                var response = await httpClient.PostAsJsonAsync("/Login", authRequest);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    string responseString = await response.Content.ReadAsStringAsync();
-                    return responseString; // Vraća korisnika u JSON formatu
+                    var apiResponse = JsonConvert.DeserializeObject<ApiResponse<UserDTO>>(await response.Content.ReadAsStringAsync());
+                    return BaseResponse<UserDTO>.SuccessResult(apiResponse.User);
                 }
-                else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+
+                // Obrada grešaka
+                if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
                 {
-                    return "Neispravna lozinka.";
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(errorContent);
+                    throw new HttpRequestException(errorResponse.Message);
                 }
-                else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
-                {
-                    return "Korisnik nije pronađen.";
-                }
-                else
-                {
-                    return "Greška prilikom prijave.";
-                }
+
+                throw new HttpRequestException("Nepoznata greška prilikom prijave.");
             }
             catch (Exception ex)
             {
-                return $"Greška prilikom prijave: {ex.Message}";
+                return BaseResponse<UserDTO>.FailureResult($"Greška prilikom prijave: {ex.Message}");
             }
         }
+
+
     }
 }

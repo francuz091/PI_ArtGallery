@@ -1,4 +1,5 @@
-﻿using ArtGalleryWebApp.Dao;
+﻿using ArtGalleryAPI.Models.DTO;
+using ArtGalleryWebApp.Dao;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,30 +20,24 @@ namespace ArtGalleryWebApp.Controllers
         [HttpGet]
         public ActionResult Index()
         {
-            return View();
+            var model = new AuthRequestDTO();
+            return View(model);
         }
 
         [HttpPost]
-        public async Task<ActionResult> Index(string username, string password)
+        public async Task<ActionResult> Index(AuthRequestDTO authRequest)
         {
             try
             {
                 // Pozivanje metode za autentifikaciju
-                var result = await repository.Login(username, password);
+                var result = await repository.Login(authRequest);
 
-                // Proveravanje odgovora
-                if (result == "Neispravna lozinka." || result == "Korisnik nije pronađen.")
+                
+                if (result.ErrorMessage !=null)
                 {
-                    ModelState.AddModelError("", result);
-                    return View();
+                    ModelState.AddModelError("", result.ErrorMessage);
+                    return View(authRequest);
                 }
-                else if (result.StartsWith("Greška prilikom prijave:"))
-                {
-                    ModelState.AddModelError("", result);
-                    return View();
-                }
-
-                // Ako je uspešno, redirektuj korisnika
                 return RedirectToAction("Index", "Home");
             }
             catch (Exception ex)
