@@ -5174,11 +5174,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Marko\\Desktop\\ArtGallery\\ArtGallery.API\\ArtGallery.API.csproj",
+      "projectUniqueName": "C:\\Users\\Marko\\Desktop\\ArtGallery\\API\\ArtGallery.API\\ArtGallery.API.csproj",
       "projectName": "ArtGallery.API",
-      "projectPath": "C:\\Users\\Marko\\Desktop\\ArtGallery\\ArtGallery.API\\ArtGallery.API.csproj",
+      "projectPath": "C:\\Users\\Marko\\Desktop\\ArtGallery\\API\\ArtGallery.API\\ArtGallery.API.csproj",
       "packagesPath": "C:\\Users\\Marko\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Marko\\Desktop\\ArtGallery\\ArtGallery.API\\obj\\",
+      "outputPath": "C:\\Users\\Marko\\Desktop\\ArtGallery\\API\\ArtGallery.API\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\Marko\\AppData\\Roaming\\NuGet\\NuGet.Config",
